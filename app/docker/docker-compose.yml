@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  redis:
+    build:
+      context: ../redis
+      dockerfile: Dockerfile
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - oda-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api-service:
+    build:
+      context: ../api-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - oda-network
+    restart: unless-stopped
+
+  nextjs:
+    build:
+      context: ../client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - API_SERVICE_URL=http://api-service:8000
+    depends_on:
+      - api-service
+    networks:
+      - oda-network
+
+volumes:
+  redis-data:
+
+networks:
+  oda-network:
+    driver: bridge

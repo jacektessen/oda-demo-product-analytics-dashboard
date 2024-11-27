@@ -74,5 +74,6 @@ Common issues:
 2. Port conflicts: Check what's using the port (`lsof -i :6379`)
 3. Config file errors: Verify paths in `redis.conf` exist
 4. Process management: Use `ps aux | grep redis` to check running instances
+5. In Docker you can check kyes through e.g. `docker exec -it docker-redis-1 redis-cli`
 
 For more details, refer to [Redis documentation](https://redis.io/documentation).
