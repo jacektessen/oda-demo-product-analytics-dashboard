@@ -92,3 +92,57 @@ Na podstawie dostarczonego przykładu danych z API, oto kilka sugestii odnośnie
 Pamiętaj, że to tylko sugestie na podstawie jednego przykładowego obiektu z API. W zależności od pełnej struktury danych i wymagań biznesowych, możesz dostosować wykresy i tabele do konkretnych potrzeb.
 
 Kluczowe jest, aby wykresy i tabele były interaktywne, responsywne i łatwe w interpretacji dla użytkownika. Warto też zadbać o odpowiednie opisy osi, legendy i tytuły, aby użytkownik dokładnie wiedział, co przedstawiają dane.
+
+
+Podsumujmy aktualny stan projektu ODA:
+
+1. Struktura projektu:
+```
+oda/
+├── client/               # Next.js frontend
+│   └── src/             # Next.js z wybraną strukturą src/
+├── api-service/         # Python API mikroservis
+│   ├── src/
+│   │   └── main.py     # Podstawowa aplikacja FastAPI
+│   ├── requirements.txt
+│   └── venv/           # Środowisko wirtualne Python
+└── docker/             # (przygotowane do implementacji)
+```
+
+2. Kluczowe decyzje:
+- Wybraliśmy strukturę `src/` w Next.js
+- Ustawiliśmy alias importów `@/*` w Next.js
+- Python API jako osobny mikroservis
+- Używamy Python 3.11 (ze względu na kompatybilność z bibliotekami)
+- Skonfigurowane osobne .gitignore dla każdego komponentu
+
+3. Zaimplementowane elementy:
+- Podstawowa struktura Next.js
+- Podstawowa aplikacja FastAPI z:
+  - CORS middleware
+  - Health check endpoint
+  - Przygotowaniem pod scheduler
+
+4. Zależności Python (w requirements.txt):
+```
+fastapi==0.104.1
+uvicorn==0.24.0
+redis==5.0.1
+httpx==0.25.1
+pydantic==1.10.13
+apscheduler==3.10.4
+python-dotenv==1.0.0
+```
+
+5. Następne kroki do implementacji:
+- Implementacja klienta API ODA
+- Konfiguracja Redis
+- Implementacja zadań cyklicznych (co 15 min)
+- Rozwój frontendu w Next.js
+
+6. Środowisko developerskie:
+- VSCode skonfigurowany z interpreterem Python z venv
+- Git zainicjowany w głównym katalogu
+- Docker w przygotowaniu
+
+Wszystkie pliki konfiguracyjne (main.py, requirements.txt, .gitignore) są już utworzone i gotowe do dalszej rozbudowy projektu.
