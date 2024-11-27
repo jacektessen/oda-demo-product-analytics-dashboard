@@ -1,79 +1,137 @@
-# Redis Service for ODA Dashboard
+# ODA API Stats Service
 
-This component provides caching and data storage functionality for the ODA Dashboard project. It's configured for optimal performance with product data caching and statistics aggregation.
+A microservice-based application that fetches, processes, and caches product statistics from the ODA API.
 
-## Quick Start
+## Project Structure
 
-For installation instructions, see [official Redis documentation](https://redis.io/docs/getting-started/).
-
-### Running Redis
-
-Via Homebrew:
-```bash
-# Start
-brew services start redis
-
-# Stop
-brew services stop redis
-
-# Check status
-brew services list | grep redis
+```
+.
+├── api-service/          # FastAPI backend service
+├── client/              # Next.js frontend application
+├── redis/               # Redis configuration
+├── tests/               # API tests
+└── docker/             # Docker configurations
 ```
 
-With custom configuration:
-```bash
-# Start
-redis-server redis.conf
+## Features
 
-# Stop
-redis-cli shutdown
+- Fetches and aggregates product data from ODA API
+- Caches processed data in Redis
+- Provides RESTful API endpoints for statistics
+- Automatic data refresh every 30 minutes
+- Real-time health monitoring
+- Comprehensive API testing suite
+
+## Prerequisites
+
+- Docker and Docker Compose
+- Node.js 18+ (for local development)
+- Python 3.11+ (for local development)
+
+## Getting Started
+
+1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd oda-project
 ```
 
-### Basic Commands
+2. Start the services
 
 ```bash
-# Test connection
-redis-cli ping
+docker-compose up -d
+```
 
-# Check all keys
-redis-cli KEYS "*"
+The following services will be available:
+- API Service: http://localhost:8000
+- Frontend: http://localhost:3000
+- Redis: localhost:6379
 
-# Get specific key value
-redis-cli GET key_name
+## API Endpoints
 
-# Monitor Redis operations
-redis-cli MONITOR
+### Statistics
+```
+GET /api/stats
+```
+Returns aggregated product statistics including:
+- Total product count
+- Average price
+- Price ranges distribution
+- Top 10 brands
+- Category distribution
+- Cache information
 
-# Check Redis status
-redis-cli INFO
+### Health Check
+```
+GET /health
+```
+Returns health status of the service and its dependencies.
+
+## Running Tests
+
+Tests are maintained separately from the main services. To run the tests:
+
+1. Ensure services are running
+```bash
+docker-compose up -d
+```
+
+2. Run tests locally
+```bash
+cd tests
+npm install
+npm test
+```
+
+View test reports:
+```bash
+npm run report
 ```
 
 ## Configuration
 
-Key configuration parameters (see `redis.conf`):
-- Memory limit: 256MB
-- Cache policy: LRU (Least Recently Used)
-- Persistence: RDB snapshots
-- Port: 6379
-- Log file: `./redis.log`
+Environment variables:
+- `API_SERVICE_URL`: API service URL (default: http://api-service:8000)
+- `REDIS_HOST`: Redis host (default: redis)
+- `REDIS_PORT`: Redis port (default: 6379)
 
-## Cache Structure
+## Cache Strategy
 
-Main key patterns used in the project:
-- `products:stats:*` - Product statistics
-- `products:categories:*` - Category data
-- `products:brands:*` - Brand aggregations
-- `cache:*` - General purpose cache
+- Initial cache population on service startup
+- Automatic refresh every 30 minutes
+- Cache TTL: 1 hour
+- Fallback mechanism if cache is unavailable
 
-Default TTL for cache entries: 15 minutes
+## Development
 
-## Troubleshooting
+### API Service Development
+```bash
+cd api-service
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
 
-Common issues:
-1. Connection refused: Check if Redis is running (`redis-cli ping`)
-2. Port conflicts: Check what's using the port (`lsof -i :6379`)
-3. Config file errors: Verify paths in `redis.conf` exist
-4. Process management: Use `ps aux | grep redis` to check running instances
-5. In Docker you can check kyes through e.g. `docker exec -it docker-redis-1 redis-cli`
+### Frontend Development
+```bash
+cd client
+npm install
+npm run dev
+```
 
-For more details, refer to [Redis documentation](https://redis.io/documentation).
+### Running Tests During Development
+```bash
+cd tests
+npm install
+npm run test:ui  # For UI mode
+npm run test:debug  # For debug mode
+```
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Run tests and ensure they pass
+4. Submit a pull request
