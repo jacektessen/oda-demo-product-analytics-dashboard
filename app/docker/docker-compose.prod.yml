@@ -1,10 +1,6 @@
-version: '3.8'
-
 services:
   redis:
-    build:
-      context: ../redis
-      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY}/redis:latest
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
     environment:
@@ -20,9 +16,7 @@ services:
       retries: 5
 
   api-service:
-    build:
-      context: ../api-service
-      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY}/api-service:latest
     ports:
       - "${FASTAPI_PORT}:${FASTAPI_PORT}"
     environment:
@@ -38,18 +32,11 @@ services:
     restart: unless-stopped
 
   nextjs:
-    build:
-      context: ../client
-      dockerfile: Dockerfile
-      args:
-        # Use localhost for build time but keep dynamic ports
-        - FASTAPI_INTERNAL_URL=http://localhost:${FASTAPI_PORT}
-        - NEXT_PUBLIC_API_URL=http://localhost:${FASTAPI_PORT}/api
+    image: ghcr.io/${GITHUB_REPOSITORY}/nextjs:latest
     ports:
       - "${NEXTJS_PORT}:${NEXTJS_PORT}"
     environment:
-      # Use api-service for runtime
-      - FASTAPI_INTERNAL_URL=http://api-service:${FASTAPI_PORT}
+      - FASTAPI_INTERNAL_URL=${FASTAPI_INTERNAL_URL}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - PORT=${NEXTJS_PORT}
     depends_on:
