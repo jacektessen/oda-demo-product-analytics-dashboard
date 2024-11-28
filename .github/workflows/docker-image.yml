@@ -162,6 +162,7 @@ jobs:
           DEPLOY_KEY: "${{ secrets.DEPLOY_KEY }}"
           DEPLOY_HOST: "${{ secrets.DEPLOY_HOST }}"
           DEPLOY_USER: "${{ secrets.DEPLOY_USERNAME }}"
+          GITHUB_REPO: "${{ github.repository }}"
         run: |
           # Setup SSH
           mkdir -p ~/.ssh
@@ -169,12 +170,14 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
           
-          echo "Checking production docker-compose file..."
-          ls -la app/docker/docker-compose.prod.yml
-          cat app/docker/docker-compose.prod.yml
+          echo "Creating temporary docker-compose file with repository name..."
+          sed "s|\${GITHUB_REPOSITORY}|${GITHUB_REPO}|g" app/docker/docker-compose.prod.yml > docker-compose.tmp.yml
+          
+          echo "Checking processed docker-compose file..."
+          cat docker-compose.tmp.yml
           
           echo "Copying files..."
-          scp -i ~/.ssh/deploy_key app/docker/docker-compose.prod.yml $DEPLOY_USER@$DEPLOY_HOST:/opt/oda-dashboard/docker-compose.yml
+          scp -i ~/.ssh/deploy_key docker-compose.tmp.yml $DEPLOY_USER@$DEPLOY_HOST:/opt/oda-dashboard/docker-compose.yml
           scp -i ~/.ssh/deploy_key .env $DEPLOY_USER@$DEPLOY_HOST:/opt/oda-dashboard/
           
           echo "Verifying files on server..."
