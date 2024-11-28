@@ -41,14 +41,18 @@ services:
     build:
       context: ../client
       dockerfile: Dockerfile
+      target: deps
       args:
-        # Use localhost for build time but keep dynamic ports
         - FASTAPI_INTERNAL_URL=http://localhost:${FASTAPI_PORT}
         - NEXT_PUBLIC_API_URL=http://localhost:${FASTAPI_PORT}/api
+    volumes:
+      - ../client:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
     ports:
       - "${NEXTJS_PORT}:${NEXTJS_PORT}"
     environment:
-      # Use api-service for runtime
       - FASTAPI_INTERNAL_URL=http://api-service:${FASTAPI_PORT}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - PORT=${NEXTJS_PORT}
