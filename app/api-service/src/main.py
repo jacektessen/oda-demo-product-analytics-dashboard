@@ -10,7 +10,7 @@ from typing import Optional, Dict, List
 from pydantic import BaseModel
 import httpx
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -74,36 +74,32 @@ background_tasks: Set[asyncio.Task] = set()
 async def periodic_stats_update():
     """Periodically update product statistics in Redis."""
     logger.info("Periodic stats update task started - waiting 30 minutes before first update")
-    # First sleep for 30 minutes to avoid immediate update after initial
-    await asyncio.sleep(30 * 60)  # 30 minutes in seconds
+    await asyncio.sleep(30 * 60)
     
     while True:
         try:
             next_update = datetime.now() + timedelta(minutes=30)
             logger.info(f"Starting periodic stats update (next update scheduled for: {next_update.isoformat()})")
             
-            # Fetch and process data
             products = await fetch_all_products()
             if products:
                 stats = calculate_stats(products)
                 if stats:
-                    # Cache the results
-                    redis_client.setex(
-                        "product:stats",
-                        CACHE_TTL,
-                        json.dumps(stats.dict())
-                    )
+                    # Write to temporary key first
+                    temp_key = "product:stats:temp"
+                    redis_client.setex(temp_key, CACHE_TTL, json.dumps(stats.dict()))
+                    
+                    # Atomic swap
+                    redis_client.rename(temp_key, "product:stats")
                     logger.info(f"Successfully updated stats cache at {datetime.now().isoformat()}")
             
-            # Wait for next update
-            await asyncio.sleep(30 * 60)  # 30 minutes in seconds
+            await asyncio.sleep(30 * 60)
             
         except asyncio.CancelledError:
             logger.info("Periodic stats update task cancelled")
             break
         except Exception as e:
             logger.error(f"Error in periodic stats update: {str(e)}")
-            # Wait 5 minutes before retrying on error
             await asyncio.sleep(5 * 60)
 
 async def initial_stats_update():
@@ -114,11 +110,10 @@ async def initial_stats_update():
         if products:
             stats = calculate_stats(products)
             if stats:
-                redis_client.setex(
-                    "product:stats",
-                    CACHE_TTL,
-                    json.dumps(stats.dict())
-                )
+                # Same atomic update pattern for initial update
+                temp_key = "product:stats:temp"
+                redis_client.setex(temp_key, CACHE_TTL, json.dumps(stats.dict()))
+                redis_client.rename(temp_key, "product:stats")
                 logger.info("Initial stats cache created successfully")
     except Exception as e:
         logger.error(f"Error in initial stats update: {str(e)}")
@@ -298,7 +293,7 @@ def calculate_stats(products: List[dict]) -> ProductStats:
         price_ranges=price_ranges,
         top_brands=top_brands,
         categories=categories,
-        last_updated=datetime.now().isoformat()
+        last_updated=datetime.now(timezone.utc).isoformat()
     )
     
     logger.info(f"Stats calculation completed. Found {len(brands)} unique brands, {len(categories)} categories")
@@ -327,40 +322,41 @@ async def health_check():
 
 @app.get("/api/stats")
 async def get_stats():
-    """Get product statistics from cache."""
-    global redis_client
-    cache_key = "product:stats"
-    
-    if not redis_client:
-        raise HTTPException(status_code=503, detail="Redis connection not available")
+   global redis_client
+   cache_key = "product:stats"
+   
+   if not redis_client:
+       raise HTTPException(status_code=503, detail="Redis connection not available")
 
-    try:
-        # Get from cache
-        cached_data = redis_client.get(cache_key)
-        if not cached_data:
-            logger.warning("Cache miss in /api/stats - waiting for background update")
-            raise HTTPException(
-                status_code=503, 
-                detail="Statistics are being calculated, please try again in a moment"
-            )
-            
-        stats = json.loads(cached_data)
-        
-        # Add cache metadata
-        ttl = redis_client.ttl(cache_key)
-        stats["cache_info"] = {
-            "ttl_seconds": ttl,
-            "next_update_in": ttl - (CACHE_TTL - 30 * 60)  # Time until next periodic update
-        }
-        
-        return stats
-        
-    except redis.RedisError as e:
-        logger.error(f"Redis operation failed: {e}")
-        raise HTTPException(status_code=500, detail="Redis operation failed")
-    except Exception as e:
-        logger.error(f"Error processing data: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error processing data")
+   try:
+       cached_data = redis_client.get(cache_key)
+       if not cached_data:
+           logger.warning("Cache miss in /api/stats - waiting for background update")
+           raise HTTPException(
+               status_code=503, 
+               detail="Statistics are being calculated, please try again in a moment"
+           )
+           
+       stats = json.loads(cached_data)
+       
+       # Add cache metadata with next_update_at timestamp
+       ttl = redis_client.ttl(cache_key)
+       now = datetime.now(timezone.utc)
+       next_update = now + timedelta(seconds=ttl - (CACHE_TTL - 30 * 60))
+       
+       stats["cache_info"] = {
+           "ttl_seconds": ttl,
+           "next_update_at": next_update.isoformat(timespec='milliseconds')
+       }
+       
+       return stats
+       
+   except redis.RedisError as e:
+       logger.error(f"Redis operation failed: {e}")
+       raise HTTPException(status_code=500, detail="Redis operation failed")
+   except Exception as e:
+       logger.error(f"Error processing data: {str(e)}")
+       raise HTTPException(status_code=500, detail="Error processing data")
 
 @app.get("/debug/redis")
 async def debug_redis():

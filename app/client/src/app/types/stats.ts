@@ -14,6 +14,6 @@ export interface ProductStats {
   last_updated: string;
   cache_info: {
     ttl_seconds: number;
-    next_update_in: number;
+    next_update_at: string;
   };
 }
