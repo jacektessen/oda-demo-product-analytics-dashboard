@@ -17,8 +17,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Constants
-ODA_API_BASE_URL = "https://oda.com/api/v1/search/mixed/"
+# Na górze pliku, z innymi stałymi
+ODA_API_BASE_URL = os.getenv('ODA_API_BASE_URL', 'https://oda.com/api/v1')
+ODA_API_SEARCH_BASE_URL = f"{ODA_API_BASE_URL}/search/mixed/"
 CACHE_TTL = 3600  # 1 hour
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+API_PORT = int(os.getenv('FASTAPI_PORT', '8000'))
 
 class BrandInfo(BaseModel):
     name: str
@@ -38,7 +42,7 @@ def wait_for_redis(retries=5, delay=2):
         try:
             client = redis.Redis(
                 host=os.getenv('REDIS_HOST', 'redis'),
-                port=int(os.getenv('REDIS_PORT', 6379)),
+                port=int(os.getenv('REDIS_PORT', REDIS_PORT)),
                 decode_responses=True,
                 socket_timeout=5,
                 socket_connect_timeout=5,
@@ -169,10 +173,10 @@ async def fetch_oda_data(page: int) -> Optional[dict]:
     async with httpx.AsyncClient() as client:
         try:
             params = {"q": "", "page": page}
-            response = await client.get(ODA_API_BASE_URL, params=params)
+            response = await client.get(ODA_API_SEARCH_BASE_URL, params=params)
             
             # Log the response status
-            logger.info(f"HTTP Request: GET {ODA_API_BASE_URL} page={page} Status: {response.status_code}")
+            logger.info(f"HTTP Request: GET {ODA_API_SEARCH_BASE_URL} page={page} Status: {response.status_code}")
             
             if response.status_code == 200:
                 return response.json()
@@ -392,4 +396,4 @@ async def debug_redis():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=API_PORT)

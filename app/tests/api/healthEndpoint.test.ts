@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { HealthResponse } from './helpers/types';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = process.env.FASTAPI_EXTERNAL_URL;
 
 test.describe('Health Endpoint', () => {
   test('should return healthy status when all services are up', async ({ request }) => {

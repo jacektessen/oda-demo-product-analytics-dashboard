@@ -1,7 +1,7 @@
 import { request } from '@playwright/test';
 
 async function globalSetup() {
-  const apiUrl = process.env.API_URL || 'http://localhost:8000';
+  const apiUrl = process.env.FASTAPI_EXTERNAL_URL;
   const maxRetries = 30; // 30 prób
   const retryDelay = 2000; // 2 sekundy między próbami
 

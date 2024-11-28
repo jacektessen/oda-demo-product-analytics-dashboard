@@ -19,5 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY src/ .
 
-# Run the application
-CMD ["python", "main.py"]
+EXPOSE ${FASTAPI_PORT}
+
+# Run the application with uvicorn
+CMD uvicorn main:app --host 0.0.0.0 --port ${FASTAPI_PORT}

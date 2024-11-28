@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { StatsResponse } from './helpers/types';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = process.env.FASTAPI_EXTERNAL_URL;
 
 test.describe('Stats Endpoint', () => {
   test('should return valid stats structure', async ({ request }) => {

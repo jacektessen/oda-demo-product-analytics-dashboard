@@ -1,4 +1,10 @@
 import { PlaywrightTestConfig } from '@playwright/test';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
+
+dotenv.config({
+  path: path.resolve(__dirname, '../docker/.env')
+});
 
 const config: PlaywrightTestConfig = {
   testDir: '.',
@@ -7,7 +13,6 @@ const config: PlaywrightTestConfig = {
   workers: 1,
   reporter: [['list'], ['html']],
   use: {
-    baseURL: process.env.API_URL || 'http://localhost:8000',
     extraHTTPHeaders: {
       'Accept': 'application/json',
     },

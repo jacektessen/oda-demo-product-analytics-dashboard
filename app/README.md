@@ -92,7 +92,7 @@ npm run report
 ## Configuration
 
 Environment variables:
-- `API_SERVICE_URL`: API service URL (default: http://api-service:8000)
+- `API_SERVICE_URL`: API service URL (default: http://localhost:8000)
 - `REDIS_HOST`: Redis host (default: redis)
 - `REDIS_PORT`: Redis port (default: 6379)
 

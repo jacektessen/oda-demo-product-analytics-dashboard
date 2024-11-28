@@ -6,7 +6,9 @@ services:
       context: ../redis
       dockerfile: Dockerfile
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    environment:
+      - REDIS_PORT=${REDIS_PORT}
     volumes:
       - redis-data:/data
     networks:
@@ -22,10 +24,11 @@ services:
       context: ../api-service
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "${FASTAPI_PORT}:${FASTAPI_PORT}"
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_URL=${REDIS_URL}
+      - FASTAPI_PORT=${FASTAPI_PORT}
+      - ODA_API_BASE_URL=${ODA_API_BASE_URL}
       - PYTHONUNBUFFERED=1
     depends_on:
       redis:
@@ -38,10 +41,12 @@ services:
     build:
       context: ../client
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     ports:
-      - "3000:3000"
+      - "${NEXTJS_PORT}:${NEXTJS_PORT}"
     environment:
-      - API_SERVICE_URL=http://api-service:8000
+      - FASTAPI_INTERNAL_URL=${FASTAPI_INTERNAL_URL}
     depends_on:
       - api-service
     networks:
