@@ -13,7 +13,7 @@ export interface PriceRanges {
 
 export interface CacheInfo {
   ttl_seconds: number;
-  next_update_in: number;
+  next_update_at: number;
 }
 
 export interface Categories {
