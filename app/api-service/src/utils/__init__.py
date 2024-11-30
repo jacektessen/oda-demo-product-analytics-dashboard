@@ -6,6 +6,7 @@ from models.stats import ProductStats, BrandInfo
 
 logger = logging.getLogger(__name__)
 
+
 def calculate_stats(products: List[dict]) -> ProductStats:
     """Calculate various statistics from products data."""
     if not products:
@@ -15,13 +16,7 @@ def calculate_stats(products: List[dict]) -> ProductStats:
     logger.info(f"Starting stats calculation for {len(products)} products")
 
     # Price ranges for grouping
-    price_ranges = {
-        "0-50": 0,
-        "51-100": 0,
-        "101-200": 0,
-        "201-500": 0,
-        "500+": 0
-    }
+    price_ranges = {"0-50": 0, "51-100": 0, "101-200": 0, "201-500": 0, "500+": 0}
 
     total_price = 0
     brands = {}
@@ -72,11 +67,7 @@ def calculate_stats(products: List[dict]) -> ProductStats:
         if isinstance(k, str) and isinstance(v, int)
     ]
 
-    top_brands = sorted(
-        valid_brands,
-        key=lambda x: x.count,
-        reverse=True
-    )[:10]
+    top_brands = sorted(valid_brands, key=lambda x: x.count, reverse=True)[:10]
 
     stats = ProductStats(
         total_products=len(products),
@@ -84,10 +75,12 @@ def calculate_stats(products: List[dict]) -> ProductStats:
         price_ranges=price_ranges,
         top_brands=top_brands,
         categories=categories,
-        last_updated=datetime.now(timezone.utc).isoformat()
+        last_updated=datetime.now(timezone.utc).isoformat(),
     )
 
-    logger.info(f"Stats calculation completed. Found {len(brands)} unique brands, {len(categories)} categories")
+    logger.info(
+        f"Stats calculation completed. Found {len(brands)} unique brands, {len(categories)} categories"
+    )
     logger.info(f"Top brand: {top_brands[0].name if top_brands else 'None'}")
 
     return stats

@@ -13,17 +13,23 @@ logger = logging.getLogger(__name__)
 background_tasks: Set[asyncio.Task] = set()
 
 import sys
+
 print(sys.path)
+
 
 async def periodic_stats_update(redis_instance):
     """Periodically update product statistics in Redis."""
-    logger.info("Periodic stats update task started - waiting 30 minutes before first update")
+    logger.info(
+        "Periodic stats update task started - waiting 30 minutes before first update"
+    )
     await asyncio.sleep(30 * 60)
 
     while True:
         try:
             next_update = datetime.now() + timedelta(minutes=30)
-            logger.info(f"Starting periodic stats update (next update scheduled for: {next_update.isoformat()})")
+            logger.info(
+                f"Starting periodic stats update (next update scheduled for: {next_update.isoformat()})"
+            )
 
             products = await fetch_all_products()
             if products:
@@ -35,7 +41,9 @@ async def periodic_stats_update(redis_instance):
 
                     # Atomic swap
                     redis_instance.rename(temp_key, "product:stats")
-                    logger.info(f"Successfully updated stats cache at {datetime.now().isoformat()}")
+                    logger.info(
+                        f"Successfully updated stats cache at {datetime.now().isoformat()}"
+                    )
 
             # await asyncio.sleep(30 * 60)
             await asyncio.sleep(60)
@@ -46,6 +54,7 @@ async def periodic_stats_update(redis_instance):
         except Exception as e:
             logger.error(f"Error in periodic stats update: {str(e)}")
             await asyncio.sleep(5 * 60)
+
 
 async def initial_stats_update(redis_instance):
     """Initial update of stats during startup."""

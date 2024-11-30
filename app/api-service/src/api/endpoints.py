@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 @router.get("/health")
 async def health_check(request: Request):
     """Health check endpoint."""
@@ -17,15 +18,16 @@ async def health_check(request: Request):
             return {
                 "status": "healthy",
                 "redis": "connected",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
     except Exception:
         pass
     return {
         "status": "unhealthy",
         "redis": "disconnected",
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
+
 
 @router.get("/api/stats")
 async def get_stats(request: Request):
@@ -38,7 +40,7 @@ async def get_stats(request: Request):
             logger.warning("Cache miss in /api/stats - waiting for background update")
             raise HTTPException(
                 status_code=503,
-                detail="Statistics are being calculated, please try again in a moment"
+                detail="Statistics are being calculated, please try again in a moment",
             )
 
         stats = json.loads(cached_data)
@@ -48,7 +50,7 @@ async def get_stats(request: Request):
 
         stats["cache_info"] = {
             "ttl_seconds": ttl,
-            "next_update_at": next_update.isoformat(timespec='milliseconds')
+            "next_update_at": next_update.isoformat(timespec="milliseconds"),
         }
 
         return stats
@@ -58,6 +60,7 @@ async def get_stats(request: Request):
     except Exception as e:
         logger.error(f"Error processing data: {str(e)}")
         raise HTTPException(status_code=500, detail="Error processing data")
+
 
 @router.get("/debug/redis")
 async def debug_redis(request: Request):
@@ -69,17 +72,14 @@ async def debug_redis(request: Request):
         debug_info = {
             "redis_connected": redis.ping(),
             "cached_keys": keys,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         key_details = {}
         for key in keys:
             ttl = redis.ttl(key)
             value_type = redis.type(key)
-            key_details[key] = {
-                "ttl": ttl,
-                "type": value_type
-            }
+            key_details[key] = {"ttl": ttl, "type": value_type}
         debug_info["key_details"] = key_details
 
         return debug_info

@@ -14,6 +14,7 @@ from config import API_PORT
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
@@ -54,6 +55,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("Cleanup completed")
 
+
 app = FastAPI(lifespan=lifespan)
 # Include the API routes
 app.include_router(api_router)
@@ -68,4 +70,5 @@ app.add_middleware(
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=API_PORT)

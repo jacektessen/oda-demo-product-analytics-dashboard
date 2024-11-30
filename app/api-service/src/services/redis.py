@@ -6,10 +6,11 @@ from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
-REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
-REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 redis_client = None
+
 
 async def init_redis_client():
     logger.info("Starting Redis initialization...")
@@ -27,10 +28,13 @@ async def init_redis_client():
         logger.error(f"Redis initialization failed: {e}")
         raise
 
+
 async def wait_for_redis(retries=5, delay=2):
     for attempt in range(retries):
         try:
-            logger.info(f"Attempt {attempt + 1} to connect to Redis at {REDIS_HOST}:{REDIS_PORT}")
+            logger.info(
+                f"Attempt {attempt + 1} to connect to Redis at {REDIS_HOST}:{REDIS_PORT}"
+            )
             client = redis.Redis(
                 host=REDIS_HOST,
                 port=REDIS_PORT,
@@ -38,7 +42,7 @@ async def wait_for_redis(retries=5, delay=2):
                 socket_timeout=5,
                 socket_connect_timeout=5,
                 retry_on_timeout=True,
-                health_check_interval=30
+                health_check_interval=30,
             )
             await asyncio.to_thread(client.ping)
             logger.info("Redis connection successful!")
@@ -50,7 +54,8 @@ async def wait_for_redis(retries=5, delay=2):
                 raise
             await asyncio.sleep(delay)
 
+
 def get_redis_client(app):
-    if not hasattr(app.state, 'redis'):
+    if not hasattr(app.state, "redis"):
         raise HTTPException(status_code=503, detail="Redis connection not available")
     return app.state.redis
