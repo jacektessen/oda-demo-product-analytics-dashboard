@@ -17,7 +17,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY src/ .
+COPY src/ /app/src/
+WORKDIR /app/src
 
 EXPOSE ${FASTAPI_PORT}
 

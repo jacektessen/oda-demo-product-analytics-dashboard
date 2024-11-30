@@ -30,6 +30,7 @@ services:
       - FASTAPI_PORT=${FASTAPI_PORT}
       - ODA_API_BASE_URL=${ODA_API_BASE_URL}
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app/src
     depends_on:
       redis:
         condition: service_healthy

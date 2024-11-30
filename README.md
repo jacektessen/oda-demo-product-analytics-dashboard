@@ -33,8 +33,7 @@ A microservice-based application that fetches, processes, and caches product sta
 1. Clone the repository
 
 ```bash
-git clone <repository-url>
-cd oda-project
+git clone https://github.com/jacektessen/oda-demo-product-analytics-dashboard.git
 ```
 
 2. Start the services
