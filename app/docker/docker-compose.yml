@@ -44,8 +44,8 @@ services:
       dockerfile: Dockerfile
       target: deps
       args:
-        - FASTAPI_INTERNAL_URL=http://localhost:${FASTAPI_PORT}
-        - NEXT_PUBLIC_API_URL=http://localhost:${FASTAPI_PORT}/api
+        - FASTAPI_INTERNAL_URL=${FASTAPI_INTERNAL_URL}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     volumes:
       - ../client:/app
       - /app/node_modules
@@ -55,7 +55,7 @@ services:
       - "${NEXTJS_PORT}:${NEXTJS_PORT}"
       - "9229:9229"  # Debug port
     environment:
-      - FASTAPI_INTERNAL_URL=http://api-service:${FASTAPI_PORT}
+      - FASTAPI_INTERNAL_URL=${FASTAPI_INTERNAL_URL}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - PORT=${NEXTJS_PORT}
     depends_on:
