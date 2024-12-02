@@ -14,7 +14,7 @@ export function Dashboard({ stats }: Props) {
       <SummaryCards stats={stats} />
       <PriceDistributionChart data={stats.price_ranges} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <TopBrandsChart data={stats.top_brands} />
+        <TopBrandsChart data={stats.top_brands} totalProducts={stats.total_products} />
         <TopCategoriesChart data={stats.categories} />
       </div>
     </div>

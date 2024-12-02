@@ -7,10 +7,17 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
 interface Props {
   data: ProductStats["top_brands"];
+  totalProducts: ProductStats["total_products"];
 }
 
-export function TopBrandsChart({ data }: Props) {
-  const filteredData = data.filter((brand) => brand.name !== "Unknown").slice(0, 5);
+export function TopBrandsChart({ data, totalProducts }: Props) {
+  const filteredData = data
+    .filter((brand) => brand.name !== "Unknown")
+    .slice(0, 5)
+    .map((brand) => ({
+      ...brand,
+      percentage: ((brand.count / totalProducts) * 100).toFixed(1),
+    }));
 
   return (
     <div className="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
@@ -25,7 +32,7 @@ export function TopBrandsChart({ data }: Props) {
               cx="50%"
               cy="50%"
               outerRadius={80}
-              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+              label={({ name, payload }) => `${name} (${payload.percentage}%)`}>
               {filteredData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
@@ -34,6 +41,7 @@ export function TopBrandsChart({ data }: Props) {
               contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "0.5rem" }}
               labelStyle={{ color: "#e2e8f0" }}
               itemStyle={{ color: "#e2e8f0" }}
+              formatter={(value, name, entry) => [`${entry.payload.percentage}%`, name]}
             />
             <Legend wrapperStyle={{ color: "#e2e8f0" }} />
           </PieChart>
